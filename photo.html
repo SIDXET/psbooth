@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instant Passport Photo Booth</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #6b7280, #3b82f6, #8b5cf6);
+      min-height: 100vh;
+      margin: 0;
+      color: white;
+      overflow-x: hidden;
+    }
+    .glassmorphism {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    .btn-primary {
+      background: linear-gradient(to right, #3b82f6, #8b5cf6);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.5);
+    }
+    .btn-secondary {
+      background: linear-gradient(to right, #ef4444, #f97316);
+    }
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(239, 68, 68, 0.5);
+    }
+    .photo-card {
+      transition: transform 0.3s ease;
+    }
+    .photo-card:hover {
+      transform: scale(1.05);
+    }
+    .rounded-xl { border-radius: 20px; }
+    #adminMenu { position: fixed; top: 20px; right: 20px; z-index: 50; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app" class="flex flex-col items-center justify-center min-h-screen p-6">
+    <!-- Admin Menu -->
+    <div id="adminMenu" class="text-white">
+      <button onclick="showAdminLogin()" class="px-5 py-2 btn-primary rounded-full font-semibold text-sm animate-fade-in">Admin</button>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="homeScreen" class="text-center p-10 glassmorphism rounded-xl max-w-lg w-full animate-fade-in">
+      <h1 class="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">Instant Passport Photo Booth</h1>
+      <p class="mb-6 text-lg">Capture your perfect passport photo in seconds!</p>
+      <select id="passportSize" class="mb-4 p-3 rounded-lg text-black w-full focus:ring-2 focus:ring-blue-500">
+        <option value="">Select Passport Size</option>
+        <option value='{"country":"United States","size":"51x51 mm (2x2 inches)","width":600,"height":600}'>United States - 51x51 mm (2x2 inches)</option>
+        <option value='{"country":"United Kingdom","size":"35x45 mm","width":413,"height":531}'>United Kingdom - 35x45 mm</option>
+        <option value='{"country":"India Passport","size":"51x51 mm","width":600,"height":600}'>India Passport - 51x51 mm</option>
+        <option value='{"country":"India PAN Card","size":"25x35 mm","width":295,"height":413}'>India PAN Card - 25x35 mm</option>
+        <option value='{"country":"Australia","size":"35x45 mm","width":413,"height":531}'>Australia - 35x45 mm</option>
+        <option value='{"country":"Canada","size":"50x70 mm","width":591,"height":827}'>Canada - 50x70 mm</option>
+        <option value='{"country":"China","size":"33x48 mm","width":390,"height":567}'>China - 33x48 mm</option>
+        <option value='{"country":"European Union","size":"35x45 mm","width":413,"height":531}'>European Union - 35x45 mm</option>
+        <option value='{"country":"Japan","size":"35x45 mm","width":413,"height":531}'>Japan - 35x45 mm</option>
+        <option value='{"country":"Russia","size":"35x45 mm","width":413,"height":531}'>Russia - 35x45 mm</option>
+        <option value='{"country":"Singapore","size":"35x45 mm","width":413,"height":531}'>Singapore - 35x45 mm</option>
+        <option value='{"country":"Malaysia","size":"35x50 mm","width":413,"height":591}'>Malaysia - 35x50 mm</option>
+        <option value='{"country":"UAE","size":"40x60 mm","width":472,"height":709}'>UAE - 40x60 mm</option>
+        <option value='{"country":"Saudi Arabia","size":"40x60 mm","width":472,"height":709}'>Saudi Arabia - 40x60 mm</option>
+        <option value='{"country":"Brazil","size":"50x70 mm","width":591,"height":827}'>Brazil - 50x70 mm</option>
+        <option value='{"country":"Mexico","size":"35x45 mm","width":413,"height":531}'>Mexico - 35x45 mm</option>
+        <option value='{"country":"South Africa","size":"35x45 mm","width":413,"height":531}'>South Africa - 35x45 mm</option>
+        <option value='{"country":"Nigeria","size":"35x45 mm","width":413,"height":531}'>Nigeria - 35x45 mm</option>
+        <option value='{"country":"Philippines","size":"35x45 mm","width":413,"height":531}'>Philippines - 35x45 mm</option>
+        <option value='{"country":"Indonesia","size":"30x40 mm","width":354,"height":472}'>Indonesia - 30x40 mm</option>
+        <option value='{"country":"Hong Kong","size":"40x50 mm","width":472,"height":591}'>Hong Kong - 40x50 mm</option>
+        <option value='{"country":"South Korea","size":"35x45 mm","width":413,"height":531}'>South Korea - 35x45 mm</option>
+        <option value='{"country":"New Zealand","size":"35x45 mm","width":413,"height":531}'>New Zealand - 35x45 mm</option>
+        <option value='{"country":"Argentina","size":"40x40 mm","width":472,"height":472}'>Argentina - 40x40 mm</option>
+        <option value='{"country":"Chile","size":"45x45 mm","width":531,"height":531}'>Chile - 45x45 mm</option>
+        <option value='{"country":"Colombia","size":"40x50 mm","width":472,"height":591}'>Colombia - 40x50 mm</option>
+        <option value='{"country":"Pakistan","size":"35x45 mm","width":413,"height":531}'>Pakistan - 35x45 mm</option>
+        <option value='{"country":"Bangladesh","size":"40x50 mm","width":472,"height":591}'>Bangladesh - 40x50 mm</option>
+        <option value='{"country":"Thailand","size":"35x45 mm","width":413,"height":531}'>Thailand - 35x45 mm</option>
+        <option value='{"country":"Vietnam","size":"40x60 mm","width":472,"height":709}'>Vietnam - 40x60 mm</option>
+        <option value='{"country":"Albania","size":"40x50 mm","width":472,"height":591}'>Albania - 40x50 mm</option>
+        <option value='{"country":"Algeria","size":"35x45 mm","width":413,"height":531}'>Algeria - 35x45 mm</option>
+        <option value='{"country":"Austria","size":"35x45 mm","width":413,"height":531}'>Austria - 35x45 mm</option>
+        <option value='{"country":"Belgium","size":"35x45 mm","width":413,"height":531}'>Belgium - 35x45 mm</option>
+        <option value='{"country":"Croatia","size":"35x45 mm","width":413,"height":531}'>Croatia - 35x45 mm</option>
+        <option value='{"country":"Czech Republic","size":"35x45 mm","width":413,"height":531}'>Czech Republic - 35x45 mm</option>
+        <option value='{"country":"Denmark","size":"35x45 mm","width":413,"height":531}'>Denmark - 35x45 mm</option>
+        <option value='{"country":"Egypt","size":"40x60 mm","width":472,"height":709}'>Egypt - 40x60 mm</option>
+        <option value='{"country":"Finland","size":"36x47 mm","width":425,"height":555}'>Finland - 36x47 mm</option>
+        <option value='{"country":"France","size":"35x45 mm","width":413,"height":531}'>France - 35x45 mm</option>
+        <option value='{"country":"Germany","size":"35x45 mm","width":413,"height":531}'>Germany - 35x45 mm</option>
+        <option value='{"country":"Greece","size":"40x60 mm","width":472,"height":709}'>Greece - 40x60 mm</option>
+        <option value='{"country":"Hungary","size":"35x45 mm","width":413,"height":531}'>Hungary - 35x45 mm</option>
+        <option value='{"country":"Ireland","size":"35x45 mm","width":413,"height":531}'>Ireland - 35x45 mm</option>
+        <option value='{"country":"Italy","size":"35x45 mm","width":413,"height":531}'>Italy - 35x45 mm</option>
+        <option value='{"country":"Netherlands","size":"35x45 mm","width":413,"height":531}'>Netherlands - 35x45 mm</option>
+        <option value='{"country":"Norway","size":"35x45 mm","width":413,"height":531}'>Norway - 35x45 mm</option>
+        <option value='{"country":"Poland","size":"35x45 mm","width":413,"height":531}'>Poland - 35x45 mm</option>
+        <option value='{"country":"Portugal","size":"35x45 mm","width":413,"height":531}'>Portugal - 35x45 mm</option>
+        <option value='{"country":"Romania","size":"35x45 mm","width":413,"height":531}'>Romania - 35x45 mm</option>
+        <option value='{"country":"Spain","size":"35x45 mm","width":413,"height":531}'>Spain - 35x45 mm</option>
+        <option value='{"country":"Sweden","size":"35x45 mm","width":413,"height":531}'>Sweden - 35x45 mm</option>
+        <option value='{"country":"Switzerland","size":"35x45 mm","width":413,"height":531}'>Switzerland - 35x45 mm</option>
+        <option value='{"country":"Turkey","size":"50x60 mm","width":591,"height":709}'>Turkey - 50x60 mm</option>
+        <option value='{"country":"Ukraine","size":"35x45 mm","width":413,"height":531}'>Ukraine - 35x45 mm</option>
+        <option value='{"country":"Zimbabwe","size":"35x45 mm","width":413,"height":531}'>Zimbabwe - 35x45 mm</option>
+      </select>
+      <button id="shootNow" onclick="startCamera()" class="px-8 py-4 btn-primary rounded-full font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>Shoot Now</button>
+    </div>
+
+    <!-- Camera Screen -->
+    <div id="cameraScreen" class="hidden flex-col items-center p-6 animate-fade-in">
+      <h2 class="text-3xl font-bold mb-4">Position Your Head</h2>
+      <p id="cameraError" class="text-red-400 hidden mb-4"></p>
+      <div class="relative w-full max-w-md">
+        <video id="video" autoplay class="w-full rounded-xl shadow-lg"></video>
+        <div class="absolute inset-0 border-4 border-green-400 rounded-xl opacity-50 pointer-events-none"></div>
+      </div>
+      <p id="countdown" class="text-2xl mt-4 hidden"></p>
+      <p id="retakes" class="mt-4 text-lg"></p>
+      <button id="captureBtn" onclick="capturePhoto()" class="mt-4 px-8 py-4 btn-primary rounded-full font-semibold text-lg">Take Photo</button>
+    </div>
+
+    <!-- Photo Preview Screen -->
+    <div id="previewScreen" class="hidden flex-col items-center p-6 animate-fade-in">
+      <h2 class="text-3xl font-bold mb-4">Select Your Photo</h2>
+      <div id="photos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+      <div id="emailSection" class="mt-6 hidden flex flex-col sm:flex-row items-center gap-4">
+        <input id="emailInput" type="email" placeholder="Enter your email" class="p-3 rounded-lg text-black w-full sm:w-64 focus:ring-2 focus:ring-blue-500" />
+        <button onclick="sendPhoto()" class="px-6 py-3 btn-primary rounded-full font-semibold">Send Photo</button>
+      </div>
+      <button id="reshootBtn" onclick="reshoot()" class="mt-6 px-6 py-3 btn-secondary rounded-full font-semibold hidden">Reshoot</button>
+    </div>
+
+    <!-- Admin Login Screen -->
+    <div id="adminLoginScreen" class="hidden flex-col items-center justify-center min-h-screen p-6 animate-fade-in">
+      <h2 class="text-3xl font-bold mb-4">Admin Login</h2>
+      <input id="adminUsername" type="text" placeholder="Username" class="p-3 rounded-lg text-black mb-4 w-full max-w-sm focus:ring-2 focus:ring-blue-500" />
+      <input id="adminPassword" type="password" placeholder="Password" class="p-3 rounded-lg text-black mb-4 w-full max-w-sm focus:ring-2 focus:ring-blue-500" />
+      <button onclick="adminLogin()" class="px-8 py-4 btn-primary rounded-full font-semibold text-lg">Login</button>
+    </div>
+
+    <!-- Admin Dashboard Screen -->
+    <div id="adminDashboard" class="hidden p-8 w-full max-w-4xl animate-fade-in">
+      <h2 class="text-3xl font-bold mb-6">Admin Dashboard</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="glassmorphism p-6 rounded-xl">
+          <h3 class="text-xl font-semibold mb-2">Revenue</h3>
+          <p id="dailyRevenue" class="text-lg"></p>
+          <p id="monthlyRevenue" class="text-lg"></p>
+          <p id="yearlyRevenue" class="text-lg"></p>
+        </div>
+        <div class="glassmorphism p-6 rounded-xl">
+          <h3 class="text-xl font-semibold mb-2">Photo Stats</h3>
+          <p id="dailyPhotos" class="text-lg"></p>
+          <p id="weeklyPhotos" class="text-lg"></p>
+          <p id="monthlyPhotos" class="text-lg"></p>
+          <p id="yearlyPhotos" class="text-lg"></p>
+        </div>
+      </div>
+      <h3 class="text-xl font-semibold mb-4">Customer Photos</h3>
+      <div id="adminPhotos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+      <button onclick="showHomeScreen()" class="mt-6 px-6 py-3 btn-secondary rounded-full font-semibold">Back to Home</button>
+    </div>
+  </div>
+
+  <script>
+    // Initialize EmailJS
+    (function() {
+      emailjs.init("Zg2t_VDDbnvE0wM95");
+    })();
+
+    let stream = null;
+    let photos = [];
+    let retakes = 3;
+    let selectedSize = null;
+    let selectedPhoto = null;
+
+    // Initialize localStorage for photos
+    if (!localStorage.getItem('photos')) {
+      localStorage.setItem('photos', JSON.stringify([]));
+    }
+
+    // Enable/disable Shoot Now button
+    document.getElementById('passportSize').addEventListener('change', (e) => {
+      selectedSize = e.target.value ? JSON.parse(e.target.value) : null;
+      document.getElementById('shootNow').disabled = !selectedSize;
+    });
+
+    // Start camera
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: selectedSize.width, height: selectedSize.height }
+        });
+        document.getElementById('video').srcObject = stream;
+        document.getElementById('homeScreen').classList.add('hidden');
+        document.getElementById('cameraScreen').classList.remove('hidden');
+        document.getElementById('retakes').textContent = `Retakes left: ${retakes}`;
+      } catch (err) {
+        document.getElementById('cameraError').textContent = 'Unable to access camera. Please allow camera access.';
+        document.getElementById('cameraError').classList.remove('hidden');
+      }
+    }
+
+    // Capture photo with countdown
+    function capturePhoto() {
+      if (retakes <= 0) {
+        document.getElementById('captureBtn').disabled = true;
+        document.getElementById('retakes').textContent = 'No more retakes available';
+        return;
+      }
+
+      let countdown = 10;
+      document.getElementById('countdown').classList.remove('hidden');
+      document.getElementById('countdown').textContent = `Capturing in ${countdown}...`;
+      const timer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+          clearInterval(timer);
+          document.getElementById('countdown').classList.add('hidden');
+          takePhoto();
+        } else {
+          document.getElementById('countdown').textContent = `Capturing in ${countdown}...`;
+        }
+      }, 1000);
+    }
+
+    // Take photo
+    function takePhoto() {
+      const canvas = document.createElement('canvas');
+      canvas.width = selectedSize.width;
+      canvas.height = selectedSize.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(document.getElementById('video'), 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compress to ~100 KB
+      photos.push(dataUrl);
+      retakes--;
+      document.getElementById('retakes').textContent = `Retakes left: ${retakes}`;
+      if (retakes === 0) {
+        document.getElementById('captureBtn').disabled = true;
+      }
+      showPreview();
+    }
+
+    // Show photo preview
+    function showPreview() {
+      document.getElementById('cameraScreen').classList.add('hidden');
+      document.getElementById('previewScreen').classList.remove('hidden');
+      const photosDiv = document.getElementById('photos');
+      photosDiv.innerHTML = '';
+      photos.forEach((photo) => {
+        const div = document.createElement('div');
+        div.className = 'photo-card glassmorphism p-2 rounded-xl';
+        const img = document.createElement('img');
+        img.src = photo;
+        img.className = 'w-full h-40 object-cover rounded-lg';
+        img.onclick = () => selectPhoto(photo);
+        div.appendChild(img);
+        photosDiv.appendChild(div);
+      });
+      if (photos.length > 0) {
+        document.getElementById('reshootBtn').classList.remove('hidden');
+      }
+    }
+
+    // Select photo
+    function selectPhoto(photo) {
+      selectedPhoto = photo;
+      document.getElementById('emailSection').classList.remove('hidden');
+      document.querySelectorAll('#photos img').forEach(img => {
+        img.className = img.src === photo ? 'w-full h-40 object-cover rounded-lg border-4 border-blue-500' : 'w-full h-40 object-cover rounded-lg';
+      });
+    }
+
+    // Send photo via EmailJS and save to localStorage
+    function sendPhoto() {
+      const email = document.getElementById('emailInput').value;
+      if (!email || !selectedPhoto) {
+        alert('Please enter an email and select a photo.');
+        return;
+      }
+      const base64Data = selectedPhoto.split(',')[1];
+      const savedPhotos = JSON.parse(localStorage.getItem('photos'));
+      savedPhotos.push({
+        email,
+        photo: selectedPhoto,
+        size: selectedSize.country + ' - ' + selectedSize.size,
+        createdAt: new Date().toISOString()
+      });
+
+      // Check localStorage size
+      try {
+        localStorage.setItem('photos', JSON.stringify(savedPhotos));
+      } catch (e) {
+        alert('Storage limit reached. Please delete some photos from the admin dashboard.');
+        return;
+      }
+
+      // Send email via EmailJS
+      emailjs.send('service_r5reltf', '__ejs-test-mail-service__', {
+        to_email: email,
+        photo_data: base64Data,
+        photo_name: 'passport-photo.jpg'
+      }).then(() => {
+        alert(`Photo sent to ${email}!`);
+        resetApp();
+      }, (error) => {
+        alert('Failed to send email. Please try again.');
+        console.error('EmailJS Error:', error);
+      });
+    }
+
+    // Reshoot
+    function reshoot() {
+      photos = [];
+      retakes = 3;
+      selectedPhoto = null;
+      document.getElementById('previewScreen').classList.add('hidden');
+      document.getElementById('cameraScreen').classList.remove('hidden');
+      document.getElementById('captureBtn').disabled = false;
+      document.getElementById('retakes').textContent = `Retakes left: ${retakes}`;
+      document.getElementById('emailSection').classList.add('hidden');
+      document.getElementById('reshootBtn').classList.add('hidden');
+    }
+
+    // Reset app
+    function resetApp() {
+      photos = [];
+      retakes = 3;
+      selectedPhoto = null;
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      document.getElementById('previewScreen').classList.add('hidden');
+      document.getElementById('cameraScreen').classList.add('hidden');
+      document.getElementById('homeScreen').classList.remove('hidden');
+      document.getElementById('emailSection').classList.add('hidden');
+      document.getElementById('reshootBtn').classList.add('hidden');
+      document.getElementById('passportSize').value = '';
+      document.getElementById('shootNow').disabled = true;
+    }
+
+    // Show admin login
+    function showAdminLogin() {
+      document.getElementById('homeScreen').classList.add('hidden');
+      document.getElementById('cameraScreen').classList.add('hidden');
+      document.getElementById('previewScreen').classList.add('hidden');
+      document.getElementById('adminLoginScreen').classList.remove('hidden');
+      document.getElementById('adminDashboard').classList.add('hidden');
+    }
+
+    // Show home screen
+    function showHomeScreen() {
+      document.getElementById('adminDashboard').classList.add('hidden');
+      document.getElementById('homeScreen').classList.remove('hidden');
+    }
+
+    // Admin login
+    function adminLogin() {
+      const username = document.getElementById('adminUsername').value;
+      const password = document.getElementById('adminPassword').value;
+      if (username === 'admin' && password === 'securePass123') {
+        document.getElementById('adminLoginScreen').classList.add('hidden');
+        document.getElementById('adminDashboard').classList.remove('hidden');
+        loadAdminDashboard();
+      } else {
+        alert('Invalid credentials');
+      }
+    }
+
+    // Load admin dashboard
+    function loadAdminDashboard() {
+      const savedPhotos = JSON.parse(localStorage.getItem('photos')) || [];
+      const pricePerPhoto = 1; // $1 per photo
+      const now = new Date();
+      const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+      const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+      const dailyPhotos = savedPhotos.filter(p => new Date(p.createdAt) >= startOfDay).length;
+      const weeklyPhotos = savedPhotos.filter(p => new Date(p.createdAt) >= startOfWeek).length;
+      const monthlyPhotos = savedPhotos.filter(p => new Date(p.createdAt) >= startOfMonth).length;
+      const yearlyPhotos = savedPhotos.filter(p => new Date(p.createdAt) >= startOfYear).length;
+
+      document.getElementById('dailyRevenue').textContent = `Daily: $${dailyPhotos * pricePerPhoto}`;
+      document.getElementById('monthlyRevenue').textContent = `Monthly: $${monthlyPhotos * pricePerPhoto}`;
+      document.getElementById('yearlyRevenue').textContent = `Yearly: $${yearlyPhotos * pricePerPhoto}`;
+      document.getElementById('dailyPhotos').textContent = `Daily: ${dailyPhotos}`;
+      document.getElementById('weeklyPhotos').textContent = `Weekly: ${weeklyPhotos}`;
+      document.getElementById('monthlyPhotos').textContent = `Monthly: ${monthlyPhotos}`;
+      document.getElementById('yearlyPhotos').textContent = `Yearly: ${yearlyPhotos}`;
+
+      const adminPhotos = document.getElementById('adminPhotos');
+      adminPhotos.innerHTML = '';
+      savedPhotos.forEach((photo, index) => {
+        const div = document.createElement('div');
+        div.className = 'glassmorphism p-4 rounded-xl photo-card';
+        div.innerHTML = `
+          <img src="${photo.photo}" alt="User" class="w-full h-40 object-cover rounded-lg mb-2" />
+          <p class="text-sm">Email: ${photo.email}</p>
+          <p class="text-sm">Size: ${photo.size}</p>
+          <button onclick="deletePhoto(${index})" class="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+        `;
+        adminPhotos.appendChild(div);
+      });
+    }
+
+    // Delete photo
+    function deletePhoto(index) {
+      const savedPhotos = JSON.parse(localStorage.getItem('photos'));
+      savedPhotos.splice(index, 1);
+      localStorage.setItem('photos', JSON.stringify(savedPhotos));
+      loadAdminDashboard();
+    }
+  </script>
+</body>
+</html>
